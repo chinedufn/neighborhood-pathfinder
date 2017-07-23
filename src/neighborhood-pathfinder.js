@@ -1,3 +1,6 @@
+// TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
+var Heap = require('heap')
+
 module.exports = {
   findPath: findPath
 }
@@ -33,8 +36,6 @@ function findPath (opts) {
   cameFrom[startIndexInGrid] = -1
   var path
 
-  // TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
-  var Heap = require('heap')
   var frontier = new Heap(function heuristic (a, b) {
     if (opts.allowDiagonal) {
       return orthogonalAndDiagonalHeuristic(a, opts.end) - orthogonalAndDiagonalHeuristic(b, opts.end)
