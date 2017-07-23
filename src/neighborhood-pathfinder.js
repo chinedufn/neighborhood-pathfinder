@@ -166,17 +166,23 @@ function findPath (opts) {
   }
 
   function pushDiagonalTile (offsetX, offsetY) {
+    if (isDiagonalTile(offsetX, offsetY)) {
+      potentialNeighbors.push(currentTile[0] + offsetX)
+      potentialNeighbors.push(currentTile[1] + offsetY)
+    }
+  }
+
+  function isDiagonalTile (offsetX, offsetY) {
     var firstCrossedTileIndex = ((currentTile[0]) % opts.gridWidth) + ((currentTile[1] + offsetY) * opts.gridWidth)
     var secondCrossedTileIndex = ((currentTile[0] + offsetX) % opts.gridWidth) + ((currentTile[1]) * opts.gridWidth)
-    if (!opts.dontCrossBlockedTiles) {
-      potentialNeighbors.push(currentTile[0] + offsetX)
-      potentialNeighbors.push(currentTile[1] + offsetY)
-    } else if (
-      (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, firstCrossedTileIndex) &&
-      (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, secondCrossedTileIndex)
+    if (
+      !opts.dontCrossBlockedTiles ||
+      (
+        (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, firstCrossedTileIndex) &&
+          (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, secondCrossedTileIndex)
+      )
     ) {
-      potentialNeighbors.push(currentTile[0] + offsetX)
-      potentialNeighbors.push(currentTile[1] + offsetY)
+      return true
     }
   }
 }
