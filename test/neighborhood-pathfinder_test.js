@@ -117,3 +117,29 @@ test('Control the isTraversable function', function (t) {
 
   t.end()
 })
+
+test('Wall between two tiles blocking movement between them', function (t) {
+  var walls = {
+    // Wall between tile zero [0, 0] and four ([0, 1])
+    '0x4': 1
+  }
+
+  var opts = {
+    start: [0, 0],
+    end: [0, 2],
+    grid: [
+      0, 0, 1, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0
+    ],
+    gridWidth: 4,
+    isNextTileTraversable: function (grid, currentTileIndex, nextTileIndex) {
+      return !grid[nextTileIndex] && !walls[currentTileIndex + 'x' + nextTileIndex] && !walls[nextTileIndex + 'x' + currentTileIndex]
+    }
+  }
+  var path = weightedPathfinder.findPath(opts)
+
+  t.deepEqual(path, [0, 0, 1, 0, 1, 1, 1, 2, 0, 2], 'Tiles with value 10 have a cost of zero')
+
+  t.end()
+})
