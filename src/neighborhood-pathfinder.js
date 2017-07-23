@@ -26,9 +26,10 @@ var cycle = [
  */
 function findPath (opts) {
   var cameFrom = {}
-  cameFrom[`${opts.start[0]}x${opts.start[1]}`] = []
+  var startIndexInGrid = (opts.start[0] % opts.gridWidth) + (opts.start[1] * opts.gridWidth)
+  cameFrom[startIndexInGrid] = []
   var costSoFar = {}
-  costSoFar[`${opts.start[0]}x${opts.start[1]}`] = 0
+  costSoFar[startIndexInGrid] = 0
 
   // TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
   var Heap = require('heap')
@@ -101,16 +102,18 @@ function findPath (opts) {
     }
 
     function addToFrontier (x, y) {
-      var newCost = costSoFar[current.tile[0] + 'x' + current.tile[1]] + 1
+      var currentTileIndexInGrid = (currentTile[0] % opts.gridWidth) + (currentTile[1] * opts.gridWidth)
+      var newCost = costSoFar[currentTileIndexInGrid] + 1
+      var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
       if (
         (
-          !cameFrom[x + 'x' + y] ||
-            costSoFar[x + 'x' + y] > newCost
+          !cameFrom[potentialNeighborIndexInGrid] ||
+            costSoFar[potentialNeighborIndexInGrid] > newCost
         ) &&
           (!opts.maxCost || newCost < opts.maxCost)
       ) {
-        costSoFar[x + 'x' + y] = newCost
-        cameFrom[x + 'x' + y] = current.tile
+        costSoFar[potentialNeighborIndexInGrid] = newCost
+        cameFrom[potentialNeighborIndexInGrid] = current.tile
         if (x === opts.end[0] && y === opts.end[1]) {
           return calculatePath(opts.end)
         }
@@ -124,6 +127,7 @@ function findPath (opts) {
   function calculatePath (endTile) {
     var path = []
     while (endTile) {
+      var endTileIndexInGrid = (endTile[0] % opts.gridWidth) + (endTile[1] * opts.gridWidth)
       // TODO: Make it so that we don't need this check
       if (endTile.length > 0) {
         // Pushing them backwards since we're reversing
@@ -131,7 +135,7 @@ function findPath (opts) {
         path.push(endTile[1])
         path.push(endTile[0])
       }
-      endTile = cameFrom[endTile[0] + 'x' + endTile[1]]
+      endTile = cameFrom[endTileIndexInGrid]
     }
 
     return path.reverse()
