@@ -62,18 +62,6 @@ function findPath (opts) {
       break
     }
 
-    function isNeighbor (x, y) {
-      var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
-      if (
-        // Potential neighbor is within the corners of the opts.grid
-        potentialNeighborIndexInGrid > -1 && potentialNeighborIndexInGrid < opts.grid.length &&
-          // Value of potentialNeighbor is equal to zero
-          (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
-      ) {
-        return true
-      }
-    }
-
     for (var j = 0; j < 8; j += 2) {
       if (isNeighbor(current.tileX + cycle[j], current.tileY + cycle[j + 1])) {
         path = addToFrontier(current.tileX + cycle[j], current.tileY + cycle[j + 1])
@@ -82,15 +70,27 @@ function findPath (opts) {
     }
 
     if (opts.allowDiagonal) {
-      for (var j = 8; j < 16; j += 2) {
-        if (isNeighbor(current.tileX + cycle[j], current.tileY + cycle[j + 1]) && isDiagonalTile(cycle[j], cycle[j + 1])) {
-          path = addToFrontier(current.tileX + cycle[j], current.tileY + cycle[j + 1])
+      for (var k = 8; k < 16; k += 2) {
+        if (isNeighbor(current.tileX + cycle[k], current.tileY + cycle[k + 1]) && isDiagonalTile(cycle[k], cycle[k + 1])) {
+          path = addToFrontier(current.tileX + cycle[k], current.tileY + cycle[k + 1])
           if (path) { return path }
         }
       }
     }
 
     current = frontier.pop()
+  }
+
+  function isNeighbor (x, y) {
+    var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
+    if (
+      // Potential neighbor is within the corners of the opts.grid
+      potentialNeighborIndexInGrid > -1 && potentialNeighborIndexInGrid < opts.grid.length &&
+        // Value of potentialNeighbor is equal to zero
+        (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
+    ) {
+      return true
+    }
   }
 
   function addToFrontier (x, y) {
