@@ -69,15 +69,15 @@ function findPath (opts) {
     function isNeighbor (x, y) {
       var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
       if (
-          (
-            // Potential neighbor is within the corners of the opts.grid
-            x >= lowestColumn &&
-              y >= lowestRow &&
-                x <= highestColumn &&
-                  y <= highestRow &&
-                    // Value of potentialNeighbor is equal to zero
-                    (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
-          )
+        (
+          // Potential neighbor is within the corners of the opts.grid
+          x >= lowestColumn &&
+            y >= lowestRow &&
+              x <= highestColumn &&
+                y <= highestRow &&
+                  // Value of potentialNeighbor is equal to zero
+                  (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
+        )
       ) {
         return true
       }
@@ -92,40 +92,12 @@ function findPath (opts) {
 
     var potentialNeighbors = []
     if (opts.allowDiagonal) {
-      // Upper right
-      pushDiagonalTile(1, 1)
-      // Lower Right
-      pushDiagonalTile(1, -1)
-      // Lower left
-      pushDiagonalTile(-1, -1)
-      // Upper left
-      pushDiagonalTile(-1, 1)
-    }
-
-    var neighbors = potentialNeighbors
-    .filter(function (potentialNeighbor, index) {
-      // If this is an off number index and the even number index
-      // right before it was accepted then this tile is accepted
-      if (index % 2) {
-        return acceptedIndices[index - 1]
+      for (var j = 8; j < 16; j += 2) {
+        if (isNeighbor(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1]) && isDiagonalTile(cycle[j], cycle[j + 1])) {
+          var path = addToFrontier(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1])
+          if (path) { return path }
+        }
       }
-
-      if (
-        // If this is an off number index and the even number index
-        // right before it was accepted then this tile is accepted
-        (index % 2 && acceptedIndices[index - 1]) ||
-          (
-            isNeighbor(potentialNeighbor, potentialNeighbors[index + 1])
-          )
-      ) {
-        acceptedIndices[index] = true
-        return true
-      }
-    })
-
-    for (var i = 0; i < neighbors.length; i += 2) {
-      var path = addToFrontier(neighbors[i], neighbors[i + 1])
-      if (path) { return path }
     }
 
     function addToFrontier (x, y) {
