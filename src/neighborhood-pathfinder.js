@@ -17,9 +17,9 @@ function findPath (opts) {
   var Heap = require('heap')
   var frontier = new Heap(function (a, b) {
     if (opts.allowDiagonal) {
-      return orthogonalAndDiagonalHeuristic(a, opts.end) > orthogonalAndDiagonalHeuristic(b, opts.end)
+      return orthogonalAndDiagonalHeuristic(a, opts.end) - orthogonalAndDiagonalHeuristic(b, opts.end)
     } else {
-      return orthogonalHeuristic(a, opts.end) > orthogonalHeuristic(b, opts.end)
+      return orthogonalHeuristic(a, opts.end) - orthogonalHeuristic(b, opts.end)
     }
   })
   frontier.push({
@@ -34,7 +34,6 @@ function findPath (opts) {
     if (!current) {
       return null
     }
-
     var neighbors = defaultGetNeighbors(current.tile, opts)
 
     if (current.tile[0] === opts.end[0] && current.tile[1] === opts.end[1]) {
@@ -52,6 +51,9 @@ function findPath (opts) {
       ) {
         costSoFar[neighbors[i] + 'x' + neighbors[i + 1]] = newCost
         cameFrom[`${neighbors[i]}x${neighbors[i + 1]}`] = current.tile
+        if (neighbors[i] === opts.end[0] && neighbors[i + 1] === opts.end[1]) {
+          return calculatePath(opts.end)
+        }
         frontier.push({tile: [neighbors[i], neighbors[i + 1]], cost: newCost})
       }
     }
@@ -59,20 +61,21 @@ function findPath (opts) {
     current = frontier.pop()
   }
 
-  var path = []
-  var nodeSource = opts.end
-  while (nodeSource) {
-    // TODO: Make it so that we don't need this check
-    if (nodeSource.length > 0) {
-      // Pushing them backwards since we're reversing
-      // TODO: If nodeSource is an array we will know the length and won't need to reverse
-      path.push(nodeSource[1])
-      path.push(nodeSource[0])
+  function calculatePath (endTile) {
+    var path = []
+    while (endTile) {
+      // TODO: Make it so that we don't need this check
+      if (endTile.length > 0) {
+        // Pushing them backwards since we're reversing
+        // TODO: If nodeSource is an array we will know the length and won't need to reverse
+        path.push(endTile[1])
+        path.push(endTile[0])
+      }
+      endTile = cameFrom[endTile[0] + 'x' + endTile[1]]
     }
-    nodeSource = cameFrom[nodeSource[0] + 'x' + nodeSource[1]]
-  }
 
-  return path.reverse()
+    return path.reverse()
+  }
 }
 
 function orthogonalHeuristic (start, end) {

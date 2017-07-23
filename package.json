@@ -37,6 +37,7 @@
     "heap": "^0.2.6"
   },
   "devDependencies": {
+    "nanobench": "^2.1.0",
     "standard": "^10.0.2",
     "tape": "^4.7.0"
   }
