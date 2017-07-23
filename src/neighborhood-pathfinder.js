@@ -27,13 +27,14 @@ var cycle = [
 function findPath (opts) {
   var cameFrom = {}
   var startIndexInGrid = (opts.start[0] % opts.gridWidth) + (opts.start[1] * opts.gridWidth)
+  var endTileIndexInGrid = (opts.end[0] % opts.gridWidth) + (opts.end[1] * opts.gridWidth)
   cameFrom[startIndexInGrid] = []
   var costSoFar = {}
   costSoFar[startIndexInGrid] = 0
 
   // TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
   var Heap = require('heap')
-  var frontier = new Heap(function (a, b) {
+  var frontier = new Heap(function heuristic (a, b) {
     if (opts.allowDiagonal) {
       return orthogonalAndDiagonalHeuristic(a, opts.end) - orthogonalAndDiagonalHeuristic(b, opts.end)
     } else {
@@ -54,31 +55,19 @@ function findPath (opts) {
     }
 
     var currentTile = current.tile
+    var currentTileIndex = (currentTile[0] % opts.gridWidth) + (currentTile[1] * opts.gridWidth)
 
-    if (current.tile[0] === opts.end[0] && current.tile[1] === opts.end[1]) {
+    if (currentTileIndex === endTileIndexInGrid) {
       break
     }
-
-    var lowestRow = 0
-    var highestRow = opts.grid.length / opts.gridWidth - 1
-    var lowestColumn = 0
-    var highestColumn = opts.gridWidth - 1
-
-    var acceptedIndices = {}
-    var currentTileIndex = (currentTile[0] % opts.gridWidth) + (currentTile[1] * opts.gridWidth)
 
     function isNeighbor (x, y) {
       var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
       if (
-        (
-          // Potential neighbor is within the corners of the opts.grid
-          x >= lowestColumn &&
-            y >= lowestRow &&
-              x <= highestColumn &&
-                y <= highestRow &&
-                  // Value of potentialNeighbor is equal to zero
-                  (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
-        )
+        // Potential neighbor is within the corners of the opts.grid
+        potentialNeighborIndexInGrid > -1 && potentialNeighborIndexInGrid < opts.grid.length &&
+          // Value of potentialNeighbor is equal to zero
+          (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
       ) {
         return true
       }
@@ -91,7 +80,6 @@ function findPath (opts) {
       }
     }
 
-    var potentialNeighbors = []
     if (opts.allowDiagonal) {
       for (var j = 8; j < 16; j += 2) {
         if (isNeighbor(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1]) && isDiagonalTile(cycle[j], cycle[j + 1])) {
@@ -139,13 +127,6 @@ function findPath (opts) {
     }
 
     return path.reverse()
-  }
-
-  function pushDiagonalTile (offsetX, offsetY) {
-    if (isDiagonalTile(offsetX, offsetY)) {
-      potentialNeighbors.push(currentTile[0] + offsetX)
-      potentialNeighbors.push(currentTile[1] + offsetY)
-    }
   }
 
   function isDiagonalTile (offsetX, offsetY) {
