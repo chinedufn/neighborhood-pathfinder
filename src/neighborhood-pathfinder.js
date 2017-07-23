@@ -83,17 +83,14 @@ function findPath (opts) {
       }
     }
 
-    var potentialNeighbors = [
-      // Above
-      currentTile[0], currentTile[1] + 1,
-      // Below
-      currentTile[0], currentTile[1] - 1,
-      // Left
-      currentTile[0] - 1, currentTile[1],
-      // Right
-      currentTile[0] + 1, currentTile[1]
-    ]
+    for (var j = 0; j < 8; j += 2) {
+      if (isNeighbor(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1])) {
+        var path = addToFrontier(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1])
+        if (path) { return path }
+      }
+    }
 
+    var potentialNeighbors = []
     if (opts.allowDiagonal) {
       // Upper right
       pushDiagonalTile(1, 1)
@@ -147,7 +144,6 @@ function findPath (opts) {
         }
         frontier.push({tile: [x, y], cost: newCost})
       }
-
     }
 
     current = frontier.pop()
