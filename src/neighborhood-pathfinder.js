@@ -25,10 +25,13 @@ var cycle = [
   -1, 1
 ]
 
+var globalOpts
+
 /**
  * Use the A* search algorithm to find a path between start and end coordinate
  */
 function findPath (opts) {
+  globalOpts = opts
   var cameFrom = {}
   var startIndexInGrid = (opts.start[0] % opts.gridWidth) + (opts.start[1] * opts.gridWidth)
   var endTileIndexInGrid = (opts.end[0] % opts.gridWidth) + (opts.end[1] * opts.gridWidth)
@@ -37,13 +40,7 @@ function findPath (opts) {
   cameFrom[startIndexInGrid] = -1
   var path
 
-  var frontier = new Heap(function heuristic (a, b) {
-    if (opts.allowDiagonal) {
-      return orthogonalAndDiagonalHeuristic(a, opts.end) - orthogonalAndDiagonalHeuristic(b, opts.end)
-    } else {
-      return orthogonalHeuristic(a, opts.end) - orthogonalHeuristic(b, opts.end)
-    }
-  })
+  var frontier = new Heap(heuristic)
   frontier.push({
     cost: 0,
     tileX: opts.start[0],
@@ -124,6 +121,14 @@ function orthogonalHeuristic (start, end) {
 function orthogonalAndDiagonalHeuristic (start, end) {
   return Math.max(Math.abs(start.tileX - end[0]), Math.abs(start.tileY - end[1])) +
     start.cost
+}
+
+function heuristic (a, b) {
+  if (globalOpts.allowDiagonal) {
+    return orthogonalAndDiagonalHeuristic(a, globalOpts.end) - orthogonalAndDiagonalHeuristic(b, globalOpts.end)
+  } else {
+    return orthogonalHeuristic(a, globalOpts.end) - orthogonalHeuristic(b, globalOpts.end)
+  }
 }
 
 function defaultIsNextTileTraversable (grid, currentTileIndex, nextTileIndex) {
