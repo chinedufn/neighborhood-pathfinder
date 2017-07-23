@@ -1,0 +1,45 @@
+{
+  "name": "weighted-pathfinder",
+  "version": "0.0.1",
+  "description": "An a star implementation that supports weighted grids",
+  "main": "src/weighted-pathfinder.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "standard && tape test/**/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chinedufn/weighted-pathfinder.git"
+  },
+  "keywords": [
+    "astar",
+    "a",
+    "star",
+    "path",
+    "pathfind",
+    "pathfinder",
+    "weight",
+    "weighted",
+    "search",
+    "grid",
+    "tile",
+    "movement",
+    "find",
+    "graph"
+  ],
+  "author": "Chinedu Francis Nwafili <frankie.nwafili@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chinedufn/weighted-pathfinder/issues"
+  },
+  "homepage": "https://github.com/chinedufn/weighted-pathfinder#readme",
+  "dependencies": {
+    "heap": "^0.2.6"
+  },
+  "devDependencies": {
+    "standard": "^10.0.2",
+    "tape": "^4.7.0"
+  }
+}
