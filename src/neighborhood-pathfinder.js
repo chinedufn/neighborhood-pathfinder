@@ -1,16 +1,7 @@
-var orthogonalMovement = require('./orthagonal-movement.js')
-var diagonalMovement = require('./diagonal-movement.js')
+var defaultGetNeighbors = require('./default-get-neighbors.js')
 
 module.exports = {
-  findPath: findPath,
-  // TODO: Move the defaults in here
-  helpers: {
-  },
-  getOrthoganalNeighbors: orthogonalMovement.getNeighbors,
-  orthagonalHeuristic: orthogonalMovement.heuristic,
-  getOrthogonalAndDiagonalNeighbors: diagonalMovement.getNeighbors,
-  orthogonalAndDiagonalHeuristic: diagonalMovement.heuristic,
-  calculateCost: function (grid, tileIndex) { return grid[tileIndex] }
+  findPath: findPath
 }
 
 /**
@@ -25,7 +16,11 @@ function findPath (opts) {
   // TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
   var Heap = require('heap')
   var frontier = new Heap(function (a, b) {
-    return opts.heuristic(a.tile, opts.end) > opts.heuristic(b.tile, opts.end)
+    if (opts.allowDiagonal) {
+      return orthogonalAndDiagonalHeuristic(a, opts.end) > orthogonalAndDiagonalHeuristic(b, opts.end)
+    } else {
+      return orthogonalHeuristic(a, opts.end) > orthogonalHeuristic(b, opts.end)
+    }
   })
   frontier.push({
     cost: 0,
@@ -40,7 +35,7 @@ function findPath (opts) {
       return null
     }
 
-    var neighbors = opts.getNeighbors(current.tile, opts)
+    var neighbors = defaultGetNeighbors(current.tile, opts)
 
     if (current.tile[0] === opts.end[0] && current.tile[1] === opts.end[1]) {
       break
@@ -80,4 +75,12 @@ function findPath (opts) {
   return path.reverse()
 }
 
-// TODO: Move into orthoganal-movement.js
+function orthogonalHeuristic (start, end) {
+  // Manhattan distance on a square grid
+  return Math.abs(start.tile[0] - end[0]) + Math.abs(start.tile[1] - end[1]) + start.cost
+}
+
+function orthogonalAndDiagonalHeuristic (start, end) {
+  return Math.max(Math.abs(start.tile[0] - end[0]), Math.abs(start.tile[1] - end[1])) +
+    start.cost
+}

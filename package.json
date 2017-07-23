@@ -1,8 +1,8 @@
 {
-  "name": "weighted-pathfinder",
+  "name": "neighborhood-pathfinder",
   "version": "0.0.1",
-  "description": "An a star implementation that supports weighted grids",
-  "main": "src/weighted-pathfinder.js",
+  "description": "An a star implementation that accepts a function to detect neighboring tiles.",
+  "main": "src/neighborhood-pathfinder.js",
   "directories": {
     "test": "test"
   },
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chinedufn/weighted-pathfinder.git"
+    "url": "git+https://github.com/chinedufn/neighborhood-pathfinder.git"
   },
   "keywords": [
     "astar",
@@ -20,8 +20,6 @@
     "path",
     "pathfind",
     "pathfinder",
-    "weight",
-    "weighted",
     "search",
     "grid",
     "tile",
@@ -32,9 +30,9 @@
   "author": "Chinedu Francis Nwafili <frankie.nwafili@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chinedufn/weighted-pathfinder/issues"
+    "url": "https://github.com/chinedufn/neighborhood-pathfinder/issues"
   },
-  "homepage": "https://github.com/chinedufn/weighted-pathfinder#readme",
+  "homepage": "https://github.com/chinedufn/neighborhood-pathfinder#readme",
   "dependencies": {
     "heap": "^0.2.6"
   },
