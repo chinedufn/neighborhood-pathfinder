@@ -1,5 +1,6 @@
 // TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
-var Heap = require('heap')
+var createHeap = require('simple-heap')
+var frontier = createHeap(64 * 64)
 
 module.exports = {
   findPath: findPath
@@ -25,38 +26,44 @@ var cycle = [
   -1, 1
 ]
 
-var globalOpts
+var globalEstimateDistance
 
 /**
  * Use the A* search algorithm to find a path between start and end coordinate
  */
 function findPath (opts) {
-  globalOpts = opts
   var cameFrom = {}
   var startIndexInGrid = (opts.start[0] % opts.gridWidth) + (opts.start[1] * opts.gridWidth)
   var endTileIndexInGrid = (opts.end[0] % opts.gridWidth) + (opts.end[1] * opts.gridWidth)
   var costSoFar = {}
+  var estimatedDistanceFromEnd = {}
   costSoFar[startIndexInGrid] = 0
   cameFrom[startIndexInGrid] = -1
   var path
 
-  var frontier = new Heap(heuristic)
-  frontier.push({
-    cost: 0,
-    tileX: opts.start[0],
-    tileY: opts.start[1]
-  })
+  if (opts.allowDiagonal) {
+    globalEstimateDistance = estimateDiagonalDistance
+  } else {
+    globalEstimateDistance = estimateNonDiagonalDistance
+  }
 
-  var current = frontier.pop()
+  frontier.clear()
+  frontier.put(startIndexInGrid, 0)
+  estimatedDistanceFromEnd[startIndexInGrid] = globalEstimateDistance(opts.start[0], opts.start[1], opts.end)
+
+  var currentTileIndex = frontier.pop()
   while (true) {
     // If the frontier is empty and we haven't yet found a path then there
     // is no valid path and we return null
-    if (!current) {
+    if (currentTileIndex === -1) {
       return null
     }
 
-    var currentTileIndex = (current.tileX % opts.gridWidth) + (current.tileY * opts.gridWidth)
-
+    // TODO: Just use tileX and tileY direct
+    var current = {
+      tileX: currentTileIndex % opts.gridWidth,
+      tileY: Math.floor(currentTileIndex / opts.gridWidth)
+    }
     if (currentTileIndex === endTileIndexInGrid) {
       break
     }
@@ -77,7 +84,7 @@ function findPath (opts) {
       }
     }
 
-    current = frontier.pop()
+    currentTileIndex = frontier.pop()
   }
 }
 
@@ -96,6 +103,7 @@ function isNeighbor (x, y, opts, currentTileIndex) {
 function addToFrontier (x, y, current, costSoFar, cameFrom, opts, frontier, endTileIndexInGrid) {
   var currentTileIndexInGrid = (current.tileX % opts.gridWidth) + (current.tileY * opts.gridWidth)
   var newCost = costSoFar[currentTileIndexInGrid] + 1
+  var estimatedDistanceFromEnd = globalEstimateDistance(x, y, opts.end)
   var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
   if (
     (
@@ -109,26 +117,17 @@ function addToFrontier (x, y, current, costSoFar, cameFrom, opts, frontier, endT
     if (potentialNeighborIndexInGrid === endTileIndexInGrid) {
       return calculatePath(cameFrom, opts, endTileIndexInGrid)
     }
-    frontier.push({tileX: x, tileY: y, cost: newCost})
+    frontier.put(potentialNeighborIndexInGrid, newCost + estimatedDistanceFromEnd)
   }
 }
 
-function orthogonalHeuristic (start, end) {
+function estimateNonDiagonalDistance (startX, startY, end) {
   // Manhattan distance on a square grid
-  return Math.abs(start.tileX - end[0]) + Math.abs(start.tileY - end[1]) + start.cost
+  return Math.abs(startX - end[0]) + Math.abs(startY - end[1])
 }
 
-function orthogonalAndDiagonalHeuristic (start, end) {
-  return Math.max(Math.abs(start.tileX - end[0]), Math.abs(start.tileY - end[1])) +
-    start.cost
-}
-
-function heuristic (a, b) {
-  if (globalOpts.allowDiagonal) {
-    return orthogonalAndDiagonalHeuristic(a, globalOpts.end) - orthogonalAndDiagonalHeuristic(b, globalOpts.end)
-  } else {
-    return orthogonalHeuristic(a, globalOpts.end) - orthogonalHeuristic(b, globalOpts.end)
-  }
+function estimateDiagonalDistance (startX, startY, end) {
+  return Math.max(Math.abs(startX - end[0]), Math.abs(startY - end[1]))
 }
 
 function defaultIsNextTileTraversable (grid, currentTileIndex, nextTileIndex) {
