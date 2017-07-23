@@ -15,8 +15,9 @@ bench(`neighborhood-pathfinder [11, 11] to [63, 63] with very few obstacles ${nu
       end: [63, 63],
       grid: grid,
       gridWidth: 64,
-      allowDiagonal: true,
-      dontCrossBlockedTiles: true
+      gridHeight: 64
+      // allowDiagonal: true,
+      // dontCrossBlockedTiles: true
     }
     weightedPathfinder.findPath(opts)
   }
