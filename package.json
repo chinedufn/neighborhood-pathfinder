@@ -35,6 +35,7 @@
   },
   "homepage": "https://github.com/chinedufn/neighborhood-pathfinder#readme",
   "dependencies": {
+    "simple-heap": "^1.0.0"
   },
   "devDependencies": {
     "l1-path-finder": "^1.0.0",
