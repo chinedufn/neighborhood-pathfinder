@@ -28,9 +28,10 @@ function findPath (opts) {
   var cameFrom = {}
   var startIndexInGrid = (opts.start[0] % opts.gridWidth) + (opts.start[1] * opts.gridWidth)
   var endTileIndexInGrid = (opts.end[0] % opts.gridWidth) + (opts.end[1] * opts.gridWidth)
-  cameFrom[startIndexInGrid] = []
   var costSoFar = {}
   costSoFar[startIndexInGrid] = 0
+  cameFrom[startIndexInGrid] = -1
+  var path
 
   // TODO: After we have benchmarks see if we can find or make a faster implementation for our needs
   var Heap = require('heap')
@@ -43,7 +44,8 @@ function findPath (opts) {
   })
   frontier.push({
     cost: 0,
-    tile: opts.start
+    tileX: opts.start[0],
+    tileY: opts.start[1]
   })
 
   var current = frontier.pop()
@@ -54,8 +56,7 @@ function findPath (opts) {
       return null
     }
 
-    var currentTile = current.tile
-    var currentTileIndex = (currentTile[0] % opts.gridWidth) + (currentTile[1] * opts.gridWidth)
+    var currentTileIndex = (current.tileX % opts.gridWidth) + (current.tileY * opts.gridWidth)
 
     if (currentTileIndex === endTileIndexInGrid) {
       break
@@ -74,64 +75,63 @@ function findPath (opts) {
     }
 
     for (var j = 0; j < 8; j += 2) {
-      if (isNeighbor(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1])) {
-        var path = addToFrontier(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1])
+      if (isNeighbor(current.tileX + cycle[j], current.tileY + cycle[j + 1])) {
+        path = addToFrontier(current.tileX + cycle[j], current.tileY + cycle[j + 1])
         if (path) { return path }
       }
     }
 
     if (opts.allowDiagonal) {
       for (var j = 8; j < 16; j += 2) {
-        if (isNeighbor(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1]) && isDiagonalTile(cycle[j], cycle[j + 1])) {
-          var path = addToFrontier(currentTile[0] + cycle[j], currentTile[1] + cycle[j + 1])
+        if (isNeighbor(current.tileX + cycle[j], current.tileY + cycle[j + 1]) && isDiagonalTile(cycle[j], cycle[j + 1])) {
+          path = addToFrontier(current.tileX + cycle[j], current.tileY + cycle[j + 1])
           if (path) { return path }
         }
-      }
-    }
-
-    function addToFrontier (x, y) {
-      var currentTileIndexInGrid = (currentTile[0] % opts.gridWidth) + (currentTile[1] * opts.gridWidth)
-      var newCost = costSoFar[currentTileIndexInGrid] + 1
-      var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
-      if (
-        (
-          !cameFrom[potentialNeighborIndexInGrid] ||
-            costSoFar[potentialNeighborIndexInGrid] > newCost
-        ) &&
-          (!opts.maxCost || newCost < opts.maxCost)
-      ) {
-        costSoFar[potentialNeighborIndexInGrid] = newCost
-        cameFrom[potentialNeighborIndexInGrid] = current.tile
-        if (potentialNeighborIndexInGrid === endTileIndexInGrid) {
-          return calculatePath(opts.end)
-        }
-        frontier.push({tile: [x, y], cost: newCost})
       }
     }
 
     current = frontier.pop()
   }
 
-  function calculatePath (endTile) {
-    var path = []
-    while (endTile) {
-      var endTileIndexInGrid = (endTile[0] % opts.gridWidth) + (endTile[1] * opts.gridWidth)
-      // TODO: Make it so that we don't need this check
-      if (endTile.length > 0) {
-        // Pushing them backwards since we're reversing
-        // TODO: If nodeSource is an array we will know the length and won't need to reverse
-        path.push(endTile[1])
-        path.push(endTile[0])
+  function addToFrontier (x, y) {
+    var currentTileIndexInGrid = (current.tileX % opts.gridWidth) + (current.tileY * opts.gridWidth)
+    var newCost = costSoFar[currentTileIndexInGrid] + 1
+    var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
+    if (
+      (
+        (!cameFrom[potentialNeighborIndexInGrid] && cameFrom[potentialNeighborIndexInGrid] !== 0) ||
+          costSoFar[potentialNeighborIndexInGrid] > newCost
+      ) &&
+        (!opts.maxCost || newCost < opts.maxCost)
+    ) {
+      costSoFar[potentialNeighborIndexInGrid] = newCost
+      cameFrom[potentialNeighborIndexInGrid] = currentTileIndexInGrid
+      if (potentialNeighborIndexInGrid === endTileIndexInGrid) {
+        return calculatePath(endTileIndexInGrid)
       }
-      endTile = cameFrom[endTileIndexInGrid]
+      frontier.push({tileX: x, tileY: y, cost: newCost})
+    }
+  }
+
+  function calculatePath (endTileIndex) {
+    path = []
+    var slot = 0
+    while (endTileIndex !== -1) {
+      // Push y (Since we're reversing we start backwards)
+      path[slot] = Math.floor(endTileIndex / opts.gridWidth)
+      // Push x
+      path[slot + 1] = endTileIndex % opts.gridWidth
+      endTileIndex = cameFrom[endTileIndex]
+      slot += 2
     }
 
+    // TODO: No reverse. Know the length ahead of time and write to array backwards [pref]
     return path.reverse()
   }
 
   function isDiagonalTile (offsetX, offsetY) {
-    var firstCrossedTileIndex = ((currentTile[0]) % opts.gridWidth) + ((currentTile[1] + offsetY) * opts.gridWidth)
-    var secondCrossedTileIndex = ((currentTile[0] + offsetX) % opts.gridWidth) + ((currentTile[1]) * opts.gridWidth)
+    var firstCrossedTileIndex = ((current.tileX) % opts.gridWidth) + ((current.tileY + offsetY) * opts.gridWidth)
+    var secondCrossedTileIndex = ((current.tileX + offsetX) % opts.gridWidth) + ((current.tileY) * opts.gridWidth)
     if (
       !opts.dontCrossBlockedTiles ||
       (
@@ -146,11 +146,11 @@ function findPath (opts) {
 
 function orthogonalHeuristic (start, end) {
   // Manhattan distance on a square grid
-  return Math.abs(start.tile[0] - end[0]) + Math.abs(start.tile[1] - end[1]) + start.cost
+  return Math.abs(start.tileX - end[0]) + Math.abs(start.tileY - end[1]) + start.cost
 }
 
 function orthogonalAndDiagonalHeuristic (start, end) {
-  return Math.max(Math.abs(start.tile[0] - end[0]), Math.abs(start.tile[1] - end[1])) +
+  return Math.max(Math.abs(start.tileX - end[0]), Math.abs(start.tileY - end[1])) +
     start.cost
 }
 
