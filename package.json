@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "bench": "nanobench benchmark/*.js",
     "test": "standard && tape test/**/*.js"
   },
   "repository": {
@@ -37,7 +38,9 @@
     "heap": "^0.2.6"
   },
   "devDependencies": {
+    "l1-path-finder": "^1.0.0",
     "nanobench": "^2.1.0",
+    "ndarray": "^1.0.18",
     "standard": "^10.0.2",
     "tape": "^4.7.0"
   }
