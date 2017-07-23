@@ -49,7 +49,7 @@ I'm using this code in production so expect it to evolve as I run into pathing o
 
 An array of pairs of grid coordinates.
 
-```
+```js
 // example:
 var path = [1, 0, 2, 0, 2, 1]
 // Would mean start at [1, 0] -> then go to [2, 0] -> then go to [2, 1]
@@ -70,16 +70,6 @@ If no path was detected we return null
 
 - [Red Blob Games Introduction to A\*](http://www.redblobgames.com/pathfinding/a-star/introduction.html)
   - This was how I learned how to implement A\*
-
-## See Also
-
-- [load-collada-dae](https://github.com/chinedufn/load-collada-dae)
-- [skeletal-animation-system](https://github.com/chinedufn/skeletal-animation-system)
-- [wavefront-obj-parser](https://github.com/chinedufn/wavefront-obj-parser)
-
-## Credits
-
-- [Ben Houston](https://clara.io/user/bhouston) for the [3d male figure model](https://clara.io/view/d49ee603-8e6c-4720-bd20-9e3d7b13978a/webgl)
 
 ## License
 
