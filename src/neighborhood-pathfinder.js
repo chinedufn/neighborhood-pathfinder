@@ -5,6 +5,7 @@ module.exports = {
   findPath: findPath
 }
 
+var path
 var cycle = [
   // Above
   0, 1,
@@ -64,16 +65,16 @@ function findPath (opts) {
     }
 
     for (var j = 0; j < 8; j += 2) {
-      if (isNeighbor(current.tileX + cycle[j], current.tileY + cycle[j + 1])) {
-        path = addToFrontier(current.tileX + cycle[j], current.tileY + cycle[j + 1])
+      if (isNeighbor(current.tileX + cycle[j], current.tileY + cycle[j + 1], opts, currentTileIndex)) {
+        path = addToFrontier(current.tileX + cycle[j], current.tileY + cycle[j + 1], current, costSoFar, cameFrom, opts, frontier, endTileIndexInGrid)
         if (path) { return path }
       }
     }
 
     if (opts.allowDiagonal) {
       for (var k = 8; k < 16; k += 2) {
-        if (isNeighbor(current.tileX + cycle[k], current.tileY + cycle[k + 1]) && isDiagonalTile(cycle[k], cycle[k + 1])) {
-          path = addToFrontier(current.tileX + cycle[k], current.tileY + cycle[k + 1])
+        if (isNeighbor(current.tileX + cycle[k], current.tileY + cycle[k + 1], opts, currentTileIndex) && isDiagonalTile(current, currentTileIndex, opts, cycle[k], cycle[k + 1])) {
+          path = addToFrontier(current.tileX + cycle[k], current.tileY + cycle[k + 1], current, costSoFar, cameFrom, opts, frontier, endTileIndexInGrid)
           if (path) { return path }
         }
       }
@@ -81,67 +82,37 @@ function findPath (opts) {
 
     current = frontier.pop()
   }
+}
 
-  function isNeighbor (x, y) {
-    var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
-    if (
-      // Potential neighbor is within the corners of the opts.grid
-      potentialNeighborIndexInGrid > -1 && potentialNeighborIndexInGrid < opts.grid.length &&
-        // Value of potentialNeighbor is equal to zero
-        (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
-    ) {
-      return true
-    }
+function isNeighbor (x, y, opts, currentTileIndex) {
+  var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
+  if (
+    // Potential neighbor is within the corners of the opts.grid
+    potentialNeighborIndexInGrid > -1 && potentialNeighborIndexInGrid < opts.grid.length &&
+      // Value of potentialNeighbor is equal to zero
+      (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, potentialNeighborIndexInGrid)
+  ) {
+    return true
   }
+}
 
-  function addToFrontier (x, y) {
-    var currentTileIndexInGrid = (current.tileX % opts.gridWidth) + (current.tileY * opts.gridWidth)
-    var newCost = costSoFar[currentTileIndexInGrid] + 1
-    var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
-    if (
-      (
-        (!cameFrom[potentialNeighborIndexInGrid] && cameFrom[potentialNeighborIndexInGrid] !== 0) ||
-          costSoFar[potentialNeighborIndexInGrid] > newCost
-      ) &&
-        (!opts.maxCost || newCost < opts.maxCost)
-    ) {
-      costSoFar[potentialNeighborIndexInGrid] = newCost
-      cameFrom[potentialNeighborIndexInGrid] = currentTileIndexInGrid
-      if (potentialNeighborIndexInGrid === endTileIndexInGrid) {
-        return calculatePath(endTileIndexInGrid)
-      }
-      frontier.push({tileX: x, tileY: y, cost: newCost})
+function addToFrontier (x, y, current, costSoFar, cameFrom, opts, frontier, endTileIndexInGrid) {
+  var currentTileIndexInGrid = (current.tileX % opts.gridWidth) + (current.tileY * opts.gridWidth)
+  var newCost = costSoFar[currentTileIndexInGrid] + 1
+  var potentialNeighborIndexInGrid = (x % opts.gridWidth) + (y * opts.gridWidth)
+  if (
+    (
+      (!cameFrom[potentialNeighborIndexInGrid] && cameFrom[potentialNeighborIndexInGrid] !== 0) ||
+        costSoFar[potentialNeighborIndexInGrid] > newCost
+    ) &&
+      (!opts.maxCost || newCost < opts.maxCost)
+  ) {
+    costSoFar[potentialNeighborIndexInGrid] = newCost
+    cameFrom[potentialNeighborIndexInGrid] = currentTileIndexInGrid
+    if (potentialNeighborIndexInGrid === endTileIndexInGrid) {
+      return calculatePath(cameFrom, opts, endTileIndexInGrid)
     }
-  }
-
-  function calculatePath (endTileIndex) {
-    path = []
-    var slot = 0
-    while (endTileIndex !== -1) {
-      // Push y (Since we're reversing we start backwards)
-      path[slot] = Math.floor(endTileIndex / opts.gridWidth)
-      // Push x
-      path[slot + 1] = endTileIndex % opts.gridWidth
-      endTileIndex = cameFrom[endTileIndex]
-      slot += 2
-    }
-
-    // TODO: No reverse. Know the length ahead of time and write to array backwards [pref]
-    return path.reverse()
-  }
-
-  function isDiagonalTile (offsetX, offsetY) {
-    var firstCrossedTileIndex = ((current.tileX) % opts.gridWidth) + ((current.tileY + offsetY) * opts.gridWidth)
-    var secondCrossedTileIndex = ((current.tileX + offsetX) % opts.gridWidth) + ((current.tileY) * opts.gridWidth)
-    if (
-      !opts.dontCrossBlockedTiles ||
-      (
-        (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, firstCrossedTileIndex) &&
-          (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, secondCrossedTileIndex)
-      )
-    ) {
-      return true
-    }
+    frontier.push({tileX: x, tileY: y, cost: newCost})
   }
 }
 
@@ -157,4 +128,34 @@ function orthogonalAndDiagonalHeuristic (start, end) {
 
 function defaultIsNextTileTraversable (grid, currentTileIndex, nextTileIndex) {
   return !grid[nextTileIndex]
+}
+
+function calculatePath (cameFrom, opts, endTileIndex) {
+  path = []
+  var slot = 0
+  while (endTileIndex !== -1) {
+    // Push y (Since we're reversing we start backwards)
+    path[slot] = Math.floor(endTileIndex / opts.gridWidth)
+    // Push x
+    path[slot + 1] = endTileIndex % opts.gridWidth
+    endTileIndex = cameFrom[endTileIndex]
+    slot += 2
+  }
+
+  // TODO: No reverse. Know the length ahead of time and write to array backwards [pref]
+  return path.reverse()
+}
+
+function isDiagonalTile (current, currentTileIndex, opts, offsetX, offsetY) {
+  var firstCrossedTileIndex = ((current.tileX) % opts.gridWidth) + ((current.tileY + offsetY) * opts.gridWidth)
+  var secondCrossedTileIndex = ((current.tileX + offsetX) % opts.gridWidth) + ((current.tileY) * opts.gridWidth)
+  if (
+    !opts.dontCrossBlockedTiles ||
+    (
+      (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, firstCrossedTileIndex) &&
+        (opts.isNextTileTraversable || defaultIsNextTileTraversable)(opts.grid, currentTileIndex, secondCrossedTileIndex)
+    )
+  ) {
+    return true
+  }
 }
