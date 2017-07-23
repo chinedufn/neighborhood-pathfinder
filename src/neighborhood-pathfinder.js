@@ -102,7 +102,7 @@ function findPath (opts) {
       ) {
         costSoFar[potentialNeighborIndexInGrid] = newCost
         cameFrom[potentialNeighborIndexInGrid] = current.tile
-        if (x === opts.end[0] && y === opts.end[1]) {
+        if (potentialNeighborIndexInGrid === endTileIndexInGrid) {
           return calculatePath(opts.end)
         }
         frontier.push({tile: [x, y], cost: newCost})
