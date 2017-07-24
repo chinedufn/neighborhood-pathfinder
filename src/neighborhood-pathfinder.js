@@ -39,7 +39,7 @@ function findPath (opts) {
   var estimatedDistanceFromEnd = {}
   costSoFar[startIndexInGrid] = 0
   cameFrom[startIndexInGrid] = -1
-  var path
+  path = null
 
   if (opts.allowDiagonal) {
     globalEstimateDistance = estimateDiagonalDistance
@@ -47,7 +47,9 @@ function findPath (opts) {
     globalEstimateDistance = estimateNonDiagonalDistance
   }
 
-  frontier.clear()
+  // frontier.clear()
+  // TODO: We don't want to re-create the heap every time
+  frontier = createHeap(64 * 64)
   frontier.put(startIndexInGrid, 0)
   estimatedDistanceFromEnd[startIndexInGrid] = globalEstimateDistance(opts.start[0], opts.start[1], opts.end)
 

@@ -52,11 +52,14 @@ Memory -> 16GB 1867 MHz DDR3
 
 ```sh
 # neighborhood-pathfinder [11, 11] to [63, 63] with very few obstacles 1000 times
-ok ~10 ms (0 s + 10393869 ns)
+ok ~314 ms (0 s + 314455773 ns)
 
 # l1-path-finder [11, 11] to [63, 63] with very few obstacles 1000 times
-ok ~14 ms (0 s + 14003867 ns)
+ok ~16 ms (0 s + 15754404 ns)
 ```
+
+- [ ] Write a test to solve why running the same search twice returns null when we use `frontier.clear()`
+- [ ] Look into path planning if switching to clear doesn't give us a big speed up
 
 ## Usage
 
