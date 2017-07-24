@@ -30,6 +30,7 @@ var planner = createPlanner(maze)
 var path = []
 bench(`l1-path-finder [11, 11] to [63, 63] with very few obstacles ${numTimesToExecute} times`, function (b) {
   for (var i = 0; i < numTimesToExecute; i++) {
+    path.length = 0
     planner.search(11, 11, 63, 63, path)
   }
 
