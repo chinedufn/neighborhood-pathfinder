@@ -202,11 +202,12 @@ If no path was detected we return null
 
 ## TODO:
 
-- [ ] Add comments and refactor
+- [ ] Research different methods of path planning
 - [ ] Maximum distance away from start tile to explore while searching for end tile
 - [ ] Usage notes
 - [ ] API docs
 - [ ] Benchmark
+- [ ] Add comments and refactor
 - [ ] Demo
 
 ## References
