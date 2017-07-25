@@ -7,7 +7,7 @@ var grid = require('./64x64_fixture.js')
 
 var bench = require('nanobench')
 
-var numTimesToExecute = 1000
+var numTimesToExecute = 40000
 
 var opts = {
   start: [11, 11],

@@ -58,6 +58,14 @@ ok ~314 ms (0 s + 314455773 ns)
 ok ~16 ms (0 s + 15754404 ns)
 ```
 
+```sh
+# neighborhood-pathfinder [11, 11] to [63, 63] with very few obstacles 40000 times
+ok ~12 s (11 s + 508525057 ns)
+
+# l1-path-finder [11, 11] to [63, 63] with very few obstacles 40000 times
+ok ~241 ms (0 s + 240734784 ns)
+```
+
 - [ ] Write a test to solve why running the same search twice returns null when we use `frontier.clear()`
 - [ ] Look into path planning if switching to clear doesn't give us a big speed up
 
